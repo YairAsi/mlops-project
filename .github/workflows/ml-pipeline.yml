@@ -1,0 +1,55 @@
+name: MLOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - model
+
+jobs:
+  train-build-deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Generate dataset
+      run: |
+        python src/preprocess.py
+
+    - name: Train model
+      run: |
+        python src/train.py
+
+    - name: Evaluate model
+      run: |
+        python src/evaluate.py
+
+    - name: Upload trained model artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: trained-model
+        path: model/model.pkl
+
+    - name: Login to GitHub Container Registry
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Build Docker image
+      run: |
+        docker build -t ghcr.io/${{ github.repository }}/iris-model:latest .
+
+    - name: Push Docker image
+      run: |
+        docker push ghcr.io/${{ github.repository }}/iris-model:latest
