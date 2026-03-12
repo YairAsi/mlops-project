@@ -29,7 +29,7 @@ jobs:
       run: |
         mkdir -p data
         mkdir -p model
-        
+
     - name: Generate dataset
       run: |
         python src/preprocess.py
@@ -53,8 +53,10 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t ghcr.io/${{ github.repository }}/iris-model:latest .
+        IMAGE_NAME=$(echo "ghcr.io/${{ github.repository }}/iris-model:latest" | tr '[:upper:]' '[:lower:]')
+        docker build -t $IMAGE_NAME .
 
     - name: Push Docker image
       run: |
-        docker push ghcr.io/${{ github.repository }}/iris-model:latest
+        IMAGE_NAME=$(echo "ghcr.io/${{ github.repository }}/iris-model:latest" | tr '[:upper:]' '[:lower:]')
+        docker push $IMAGE_NAME
