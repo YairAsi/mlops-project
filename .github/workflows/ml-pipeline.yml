@@ -5,6 +5,10 @@ on:
     branches:
       - main
       - model
+      
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   train-build-deploy:
